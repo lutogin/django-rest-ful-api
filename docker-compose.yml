@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      # в сборке контекст текущая папка
+    ports:
+      - "8000:8000"
+    volumes:
+      # создание тома, с указателем на папку app в текущей директории
+      - ./app:/app
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
