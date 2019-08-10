@@ -9,8 +9,14 @@ ENV PYTHONUNBUFFERD 1
 
 COPY ./requirements.txt /requirements.txt
 # Копируем с рабочей директории файл с зависимостями в контейнер
+
+RUN apk add --update --no-cache postgresql-client
+RUN apk add --update --no-cache --virtual .tmp-build-deps gcc libc-dev linux-headers postgresql-dev
+# Для postgresql
+
 RUN pip install -r /requirements.txt
 # Выполним команду установки всех зависимостях описанный в requirements.txt
+RUN apk del .tmp-build-deps
 
 RUN mkdir /app
 WORKDIR /app
