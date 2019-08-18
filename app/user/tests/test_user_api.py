@@ -59,7 +59,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_for_user(self):
         """Test that a token is created for the user"""
-        payload = {'email': 'test@test.tt', 'password': 'Qwerty12345'}
+        payload = {'email': 'test@londonappdev.com', 'password': 'testpass'}
         create_user(**payload)
         res = self.client.post(TOKEN_URL, payload)
 
@@ -67,10 +67,9 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_invalid_credentials(self):
-        """Test tha token is not created credentials are given"""
-        create_user(email='test@test.tt', password='Qwerty12345')
-        payload = {'email': 'test@test.tt', 'password': 'wrong'}
-
+        """Test that token is not created if invalid credentials are given"""
+        create_user(email='test@londonappdev.com', password='testpass')
+        payload = {'email': 'test@londonappdev.com', 'password': 'wrong'}
         res = self.client.post(TOKEN_URL, payload)
 
         self.assertNotIn('token', res.data)
@@ -96,41 +95,42 @@ class PublicUserApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    class PrivateUserApiTests(TestCase):
-        """Test API requests that require authentication"""
 
-        def setUp(self):
-            self.user = create_user(
-                email='test@londonappdev.com',
-                password='testpass',
-                name='fname',
-            )
-            self.client = APIClient()
-            self.client.force_authenticate(user=self.user)
+class PrivateUserApiTests(TestCase):
+    """Test API requests that require authentication"""
 
-        def test_retrieve_profile_success(self):
-            """Test retrieving profile for logged in user"""
-            res = self.client.get(ME_URL)
+    def setUp(self):
+        self.user = create_user(
+            email='test@londonappdev.com',
+            password='testpass',
+            name='fname',
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
-            self.assertEqual(res.status_code, status.HTTP_200_OK)
-            self.assertEqual(res.data, {
-                'name': self.user.name,
-                'email': self.user.email,
-            })
+    def test_retrieve_profile_success(self):
+        """Test retrieving profile for logged in user"""
+        res = self.client.get(ME_URL)
 
-        def test_post_me_not_allowed(self):
-            """Test that POST is not allowed on the me URL"""
-            res = self.client.post(ME_URL, {})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, {
+            'name': self.user.name,
+            'email': self.user.email,
+        })
 
-            self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    def test_post_me_not_allowed(self):
+        """Test that POST is not allowed on the me URL"""
+        res = self.client.post(ME_URL, {})
 
-        def test_update_user_profile(self):
-            """Test updating the user profile for authenticated user"""
-            payload = {'name': 'new name', 'password': 'newpassword123'}
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-            res = self.client.patch(ME_URL, payload)
+    def test_update_user_profile(self):
+        """Test updating the user profile for authenticated user"""
+        payload = {'name': 'new name', 'password': 'newpassword123'}
 
-            self.user.refresh_from_db()
-            self.assertEqual(self.user.name, payload['name'])
-            self.assertTrue(self.user.check_password(payload['password']))
-            self.assertEqual(res.status_code, status.HTTP_200_OK)
+        res = self.client.patch(ME_URL, payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.name, payload['name'])
+        self.assertTrue(self.user.check_password(payload['password']))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
