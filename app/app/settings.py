@@ -126,5 +126,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# все что в адресе site.loc/static будет иметь путь к STATIC_ROOT(/vol/web/static)
+MEDIA_URL = '/media/'
+# все что в адресе site.loc/media будет иметь путь к MEDIA_ROOT(/vol/web/media)
+STATIC_ROOT = '/vol/web/static'
+MEDIA_ROOT = '/vol/web/media'
 
 AUTH_USER_MODEL = 'core.User'
